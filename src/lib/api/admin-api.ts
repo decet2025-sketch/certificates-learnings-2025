@@ -524,6 +524,7 @@ export const adminApi = {
   updateLearner: async (learnerData: {
     learner_email: string;
     organization_website: string;
+    new_website: string;
     name: string;
     email: string;
   }): Promise<{ success: boolean; message: string }> => {
@@ -531,20 +532,66 @@ export const adminApi = {
       ok: boolean;
       status: number;
       data: {
-        success: boolean;
-        message: string;
-        learner_info: {
-          name: string;
-          email: string;
-          organization_website: string;
-        };
+        updated_count: number;
       };
     }>('UPDATE_LEARNER', learnerData);
 
     return {
-      success: result.ok && result.data.success,
+      success: result.ok && result.data.updated_count > 0,
+      message: result.data.updated_count > 0
+        ? 'Learner updated successfully'
+        : 'No changes were made to the learner',
+    };
+  },
+
+  // Delete Learner
+  deleteLearner: async (learnerData: {
+    learner_email: string;
+    organization_website: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    const result = await executeAdminRouter<{
+      ok: boolean;
+      status: number;
+      data: {
+        deleted_count: number;
+        message: string;
+      };
+    }>('DELETE_LEARNER', learnerData);
+
+    return {
+      success: result.ok && result.data.deleted_count > 0,
       message: result.data.message,
     };
+  },
+
+  // CSV Validation
+  validateCsvOrganizationConflicts: async (course_id: string, csv_data: string): Promise<{
+    conflicts: Array<{
+      email: string;
+      csv_organization_website: string;
+      existing_organization_website: string;
+      row_number: number;
+      name: string;
+    }>;
+    conflict_count: number;
+    conflict_emails: string[];
+    has_conflicts: boolean;
+  }> => {
+    const result = await executeAdminRouter<{
+      data: {
+        conflicts: Array<{
+          email: string;
+          csv_organization_website: string;
+          existing_organization_website: string;
+          row_number: number;
+          name: string;
+        }>;
+        conflict_count: number;
+        conflict_emails: string[];
+        has_conflicts: boolean;
+      };
+    }>('VALIDATE_CSV_ORGANIZATION_CONFLICTS', { course_id, csv_data });
+    return result.data;
   },
 };
 

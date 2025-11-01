@@ -29,6 +29,7 @@ import {
 } from '@/lib/validations';
 import { useLearnersStore } from '@/stores/learnersStore';
 import { useUIStore } from '@/stores/uiStore';
+import { adminApi } from '@/lib/api/admin-api';
 import {
   showSuccessToast,
   showErrorToast,
@@ -51,6 +52,19 @@ export function UploadLearnersModal({
     'idle' | 'success' | 'error'
   >('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<{
+    conflicts: Array<{
+      email: string;
+      csv_organization_website: string;
+      existing_organization_website: string;
+      row_number: number;
+      name: string;
+    }>;
+    conflict_count: number;
+    conflict_emails: string[];
+    has_conflicts: boolean;
+  } | null>(null);
 
   const { uploadLearners, isLoading } = useLearnersStore();
   const { setModalOpen } = useUIStore();
@@ -71,15 +85,52 @@ export function UploadLearnersModal({
 
   const file = watch('file');
 
+  const validateCsvFile = async (file: File) => {
+    if (!courseId) return;
+
+    setIsValidating(true);
+    setValidationResult(null);
+
+    try {
+      const csvData = await file.text();
+      const validation = await adminApi.validateCsvOrganizationConflicts(courseId, csvData);
+      setValidationResult(validation);
+
+      if (validation.has_conflicts) {
+        showErrorToast(
+          'Validation Failed',
+          `Found ${validation.conflict_count} organization conflict(s). Please review the file.`
+        );
+      } else {
+        showSuccessToast(
+          'Validation Successful',
+          'CSV file has no organization conflicts.'
+        );
+      }
+    } catch (error) {
+      showErrorToast(
+        'Validation Error',
+        'Failed to validate CSV file. Please try again.'
+      );
+      setValidationResult(null);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
         setValue('file', acceptedFiles[0]);
         setUploadStatus('idle');
         setErrorMessage('');
+        setValidationResult(null);
+
+        // Validate the CSV file
+        await validateCsvFile(acceptedFiles[0]);
       }
     },
-    [setValue]
+    [setValue, courseId]
   );
 
   const {
@@ -164,6 +215,8 @@ export function UploadLearnersModal({
     setUploadProgress(0);
     setUploadStatus('idle');
     setErrorMessage('');
+    setValidationResult(null);
+    setIsValidating(false);
   };
 
   const getStatusIcon = () => {
@@ -296,6 +349,61 @@ export function UploadLearnersModal({
             </div>
           )}
 
+          {/* CSV Validation Conflicts */}
+          {validationResult && validationResult.has_conflicts && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-3">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                <h4 className="font-medium text-red-900">
+                  Organization Conflicts Found ({validationResult.conflict_count})
+                </h4>
+              </div>
+              <p className="text-sm text-red-800 mb-3">
+                The following learners have organization conflicts. They cannot be uploaded until these conflicts are resolved:
+              </p>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {validationResult.conflicts.map((conflict, index) => (
+                  <div key={index} className="bg-white border border-red-200 rounded p-2 text-xs">
+                    <div className="font-medium text-red-900">
+                      Row {conflict.row_number}: {conflict.name} ({conflict.email})
+                    </div>
+                    <div className="text-red-700 mt-1">
+                      CSV Organization: {conflict.csv_organization_website}
+                    </div>
+                    <div className="text-red-700">
+                      Existing Organization: {conflict.existing_organization_website}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Validation Success Message */}
+          {validationResult && !validationResult.has_conflicts && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <h4 className="font-medium text-green-900">
+                  Validation Successful
+                </h4>
+              </div>
+              <p className="mt-2 text-sm text-green-800">
+                The CSV file has no organization conflicts and is ready for upload.
+              </p>
+            </div>
+          )}
+
+          {/* Validation Progress */}
+          {isValidating && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Validating CSV...</span>
+              </div>
+              <div className="animate-pulse bg-blue-100 h-2 rounded-full"></div>
+            </div>
+          )}
+
           {/* Upload Progress */}
           {(isSubmitting || isLoading) && (
             <div className="space-y-2">
@@ -329,16 +437,21 @@ export function UploadLearnersModal({
             type="button"
             variant="outline"
             onClick={handleClose}
-            disabled={isSubmitting || isLoading}
+            disabled={isSubmitting || isLoading || isValidating}
           >
             Cancel
           </Button>
           <LoadingButton
             type="submit"
-            isLoading={isSubmitting || isLoading}
-            loadingText="Uploading..."
+            isLoading={isSubmitting || isLoading || isValidating}
+            loadingText={isValidating ? "Validating..." : "Uploading..."}
             onClick={handleSubmit(onSubmit)}
-            disabled={!file || uploadStatus === 'success'}
+            disabled={
+              !file ||
+              uploadStatus === 'success' ||
+              isValidating ||
+              (validationResult?.has_conflicts)
+            }
             className="flex items-center space-x-2"
           >
             <span>Upload CSV</span>

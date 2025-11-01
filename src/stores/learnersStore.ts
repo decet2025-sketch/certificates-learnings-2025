@@ -133,7 +133,7 @@ export const useLearnersStore = create<LearnersStore>()(
           set({ learners: updatedLearners }, false, 'updateLearner');
         },
 
-        deleteLearner: (id) => {
+        deleteLocalLearner: (id) => {
           const { learners } = get();
           const filteredLearners = learners.filter(
             (learner) => learner.id !== id
@@ -144,7 +144,7 @@ export const useLearnersStore = create<LearnersStore>()(
               totalCount: filteredLearners.length,
             },
             false,
-            'deleteLearner'
+            'deleteLocalLearner'
           );
         },
 
@@ -377,6 +377,61 @@ export const useLearnersStore = create<LearnersStore>()(
               },
               false,
               'uploadLearners/error'
+            );
+            throw error;
+          }
+        },
+
+        deleteLearner: async (learnerEmail: string, organizationWebsite: string) => {
+          set(
+            { isLoading: true, error: null },
+            false,
+            'deleteLearner/start'
+          );
+
+          try {
+            // Import the admin API
+            const { adminApi } = await import('@/lib/api/admin-api');
+
+            // Call the delete learner API
+            const result = await adminApi.deleteLearner({
+              learner_email: learnerEmail,
+              organization_website: organizationWebsite,
+            });
+
+            if (!result.success) {
+              throw new Error(result.message || 'Failed to delete learner');
+            }
+
+            // Refresh the learners list with proper pagination
+            const { pagination, searchTerm, selectedOrganization } =
+              get();
+            await get().fetchAdminLearners(
+              pagination.currentPage,
+              searchTerm,
+              selectedOrganization,
+              pagination.itemsPerPage
+            );
+
+            set(
+              {
+                isLoading: false,
+                error: null,
+              },
+              false,
+              'deleteLearner/success'
+            );
+
+            return result;
+          } catch (error) {
+            const errorMessage = handleApiError(error);
+            set(
+              {
+                error: errorMessage,
+                isLoading: false,
+              },
+              false,
+              'deleteLearner/error'
             );
             throw error;
           }

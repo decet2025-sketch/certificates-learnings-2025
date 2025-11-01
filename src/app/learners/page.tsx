@@ -51,6 +51,14 @@ import { useLearnersStore } from '@/stores/learnersStore';
 import { adminApi } from '@/lib/api/admin-api';
 import { LoadingCard } from '@/components/ui/loading-spinner';
 import { handleApiErrorWithToast } from '@/lib/error-toast-handler';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface CourseEnrollment {
   course_id: string;
@@ -89,6 +97,7 @@ export default function LearnersPage() {
     setPagination,
     fetchAdminLearners,
     refreshLearners,
+    deleteLearner,
   } = useLearnersStore();
 
   const [summary, setSummary] = useState({
@@ -104,6 +113,9 @@ export default function LearnersPage() {
   const [isInitialMount, setIsInitialMount] = useState(true);
   const [editingLearner, setEditingLearner] = useState<AdminLearner | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deletingLearner, setDeletingLearner] = useState<AdminLearner | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletedLearnerIds, setDeletedLearnerIds] = useState<Set<string>>(new Set());
 
   // Fetch statistics
   const fetchStatistics = async () => {
@@ -184,7 +196,10 @@ export default function LearnersPage() {
   ]); // Include all dependencies
 
   // Use adminLearners directly since all filtering is now handled by the API
-  const filteredLearners = adminLearners;
+  // Exclude deleted learners for optimistic UI updates
+  const filteredLearners = adminLearners.filter(
+    (learner) => !deletedLearnerIds.has(learner.learner_info.email)
+  );
 
   const getStatusIcon = (
     completionPercentage: number,
@@ -329,6 +344,51 @@ export default function LearnersPage() {
     setEditingLearner(null);
   };
 
+  const handleDeleteLearner = (learner: AdminLearner) => {
+    setDeletingLearner(learner);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteLearner = async () => {
+    if (!deletingLearner) return;
+
+    // Immediately remove from UI for optimistic update
+    const learnerEmail = deletingLearner.learner_info.email;
+    setDeletedLearnerIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(learnerEmail);
+      return newSet;
+    });
+
+    // Close modal immediately
+    setIsDeleteModalOpen(false);
+    setDeletingLearner(null);
+
+    try {
+      const result = await deleteLearner(
+        learnerEmail,
+        deletingLearner.learner_info.organization_website
+      );
+
+      return result;
+    } catch (error) {
+      // Error is already handled by the store with toast
+      console.error('Failed to delete learner:', error);
+      // Roll back the optimistic update on error
+      setDeletedLearnerIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(learnerEmail);
+        return newSet;
+      });
+      // Keep modal closed but show error toast
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingLearner(null);
+  };
+
   // Use summary data from API
   const totalLearners = summary?.total_learners || 0;
   const activeLearners = summary?.active_learners || 0;
@@ -376,7 +436,7 @@ export default function LearnersPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -441,7 +501,7 @@ export default function LearnersPage() {
               </p>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
 
         {/* Results Summary */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
@@ -667,6 +727,17 @@ export default function LearnersPage() {
                                         <Edit className="h-4 w-4" />
                                         <span>Edit</span>
                                       </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleDeleteLearner(learner)
+                                        }
+                                        className="flex items-center space-x-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                        <span>Delete</span>
+                                      </Button>
                                     </div>
                                   </TableCell>
                                 </TableRow>
@@ -719,6 +790,17 @@ export default function LearnersPage() {
                                 >
                                   <Edit className="h-4 w-4" />
                                   <span>Edit</span>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleDeleteLearner(learner)
+                                  }
+                                  className="flex items-center space-x-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span>Delete</span>
                                 </Button>
                               </div>
                             </div>
@@ -953,6 +1035,39 @@ export default function LearnersPage() {
           onClose={closeEditModal}
           onSuccess={refreshLearners}
         />
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Learner</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete{' '}
+                <span className="font-semibold">
+                  {deletingLearner?.learner_info.name}
+                </span>
+                ? This action cannot be undone and will permanently remove
+                the learner and all associated course enrollments.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={closeDeleteModal}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmDeleteLearner}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Deleting...' : 'Delete Learner'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

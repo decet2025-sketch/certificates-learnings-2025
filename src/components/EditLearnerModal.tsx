@@ -23,6 +23,7 @@ import { showSuccessToast, showErrorToast } from '@/components/ui/toast';
 const editLearnerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   email: z.string().email('Invalid email address'),
+  organization_website: z.string().min(1, 'Organization is required'),
 });
 
 type EditLearnerInput = z.infer<typeof editLearnerSchema>;
@@ -52,20 +53,24 @@ export function EditLearnerModal({
     defaultValues: {
       name: '',
       email: '',
+      organization_website: '',
     },
   });
 
+  
   // Update form values when learner changes
   useEffect(() => {
     if (learner) {
       reset({
         name: learner.learner_info.name,
         email: learner.learner_info.email,
+        organization_website: learner.learner_info.organization_website,
       });
     } else {
       reset({
         name: '',
         email: '',
+        organization_website: '',
       });
     }
   }, [learner, reset]);
@@ -75,14 +80,17 @@ export function EditLearnerModal({
 
     setIsLoading(true);
     try {
-      await adminApi.updateLearner({
+      const updateData: any = {
         learner_email: learner.learner_info.email,
         organization_website: learner.learner_info.organization_website,
+        new_website: data.organization_website, // Always send the organization website from form
         name: data.name,
         email: data.email,
-      });
+      };
 
-      showSuccessToast('Success', 'Learner updated successfully');
+      const result = await adminApi.updateLearner(updateData);
+
+      showSuccessToast('Success', result.message);
       onSuccess();
       onClose();
     } catch (error) {
@@ -105,7 +113,7 @@ export function EditLearnerModal({
         <DialogHeader>
           <DialogTitle>Edit Learner</DialogTitle>
           <DialogDescription>
-            Update the learner's name and email address.
+            Update the learner's name, email address, and organization.
           </DialogDescription>
         </DialogHeader>
 
@@ -128,6 +136,16 @@ export function EditLearnerModal({
             required
             register={register}
             error={errors.email}
+            disabled={isLoading}
+          />
+
+          <FormField<EditLearnerInput>
+            name="organization_website"
+            label="Organization Website"
+            placeholder="Enter organization website"
+            required
+            register={register}
+            error={errors.organization_website}
             disabled={isLoading}
           />
 

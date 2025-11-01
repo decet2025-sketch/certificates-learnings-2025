@@ -218,7 +218,8 @@ export interface LearnersActions {
   setAdminLearners: (learners: any[]) => void;
   addLearner: (learner: Learner) => void;
   updateLearner: (id: string, updates: Partial<Learner>) => void;
-  deleteLearner: (id: string) => void;
+  deleteLearner: (learnerEmail: string, organizationWebsite: string) => Promise<{ success: boolean; message: string }>;
+  deleteLocalLearner: (id: string) => void;
   setSelectedLearner: (learner: Learner | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
