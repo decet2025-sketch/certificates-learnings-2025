@@ -22,7 +22,6 @@ import { showSuccessToast, showErrorToast } from '@/components/ui/toast';
 // Validation schema
 const editLearnerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
-  email: z.string().email('Invalid email address'),
   organization_website: z.string().min(1, 'Organization is required'),
 });
 
@@ -52,7 +51,6 @@ export function EditLearnerModal({
     resolver: zodResolver(editLearnerSchema),
     defaultValues: {
       name: '',
-      email: '',
       organization_website: '',
     },
   });
@@ -63,13 +61,11 @@ export function EditLearnerModal({
     if (learner) {
       reset({
         name: learner.learner_info.name,
-        email: learner.learner_info.email,
         organization_website: learner.learner_info.organization_website,
       });
     } else {
       reset({
         name: '',
-        email: '',
         organization_website: '',
       });
     }
@@ -85,7 +81,7 @@ export function EditLearnerModal({
         organization_website: learner.learner_info.organization_website,
         new_website: data.organization_website, // Always send the organization website from form
         name: data.name,
-        email: data.email,
+        email: learner.learner_info.email, // Send the original email value as-is
       };
 
       const result = await adminApi.updateLearner(updateData);
@@ -113,7 +109,7 @@ export function EditLearnerModal({
         <DialogHeader>
           <DialogTitle>Edit Learner</DialogTitle>
           <DialogDescription>
-            Update the learner's name, email address, and organization.
+            Update the learner's name and organization website.
           </DialogDescription>
         </DialogHeader>
 
@@ -128,17 +124,7 @@ export function EditLearnerModal({
             disabled={isLoading}
           />
 
-          <FormField<EditLearnerInput>
-            name="email"
-            label="Email"
-            type="email"
-            placeholder="Enter email address"
-            required
-            register={register}
-            error={errors.email}
-            disabled={isLoading}
-          />
-
+          
           <FormField<EditLearnerInput>
             name="organization_website"
             label="Organization Website"

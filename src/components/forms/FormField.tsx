@@ -3,6 +3,7 @@
 import React from 'react'
 import { FieldError, FieldPath, FieldValues, UseFormRegister } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
@@ -48,18 +49,30 @@ export function FormField<T extends FieldValues>({
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
       
-      <Input
-        id={fieldId}
-        type={type}
-        placeholder={placeholder}
-        disabled={disabled}
-        accept={accept}
-        multiple={multiple}
-        className={cn(
-          error && 'border-red-500 focus:border-red-500 focus:ring-red-500'
-        )}
-        {...register(name)}
-      />
+      {type === 'password' ? (
+        <PasswordInput
+          id={fieldId}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={cn(
+            error && 'border-red-500 focus:border-red-500 focus:ring-red-500'
+          )}
+          {...register(name)}
+        />
+      ) : (
+        <Input
+          id={fieldId}
+          type={type}
+          placeholder={placeholder}
+          disabled={disabled}
+          accept={accept}
+          multiple={multiple}
+          className={cn(
+            error && 'border-red-500 focus:border-red-500 focus:ring-red-500'
+          )}
+          {...register(name)}
+        />
+      )}
       
       {error && (
         <p className="text-sm text-red-500 flex items-center space-x-1">

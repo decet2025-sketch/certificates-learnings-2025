@@ -11,10 +11,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { adminApi } from '@/lib/api/admin-api';
-import { handleApiErrorWithToast } from '@/lib/error-toast-handler';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useOrganizationsStore } from '@/stores/organizationsStore';
 
 interface ChangePasswordModalProps {
@@ -68,11 +66,11 @@ export function ChangePasswordModal({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="new-password">New Password</Label>
-            <Input
+            <PasswordInput
               id="new-password"
-              type="password"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
+              placeholder="Enter new password"
             />
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useCallback, useState, useEffect } from 'react'
+import React, { createContext, useContext, useCallback } from 'react'
 import { ToastContainer, toast, ToastOptions } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react'
@@ -33,7 +33,7 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined)
 // Toast provider
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const showToast = useCallback((toastData: Omit<Toast, 'id'>) => {
-    const id = Math.random().toString(36).substr(2, 9)
+    const id = Math.random().toString(36).substring(2, 11)
     
     const toastOptions: ToastOptions = {
       toastId: id,
@@ -54,7 +54,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       case 'error':
         toast.error(
           <ToastContent title={toastData.title} message={toastData.message} action={toastData.action} />,
-          { ...toastOptions, autoClose: false }
+          { ...toastOptions, autoClose: toastData.duration || 2000 }
         )
         break
       case 'warning':
@@ -244,7 +244,7 @@ export const showSuccessToast = (title: string, message: string, duration?: numb
 export const showErrorToast = (title: string, message: string, duration?: number) => {
   return toast.error(
     <ToastContent title={title} message={message} />,
-    { autoClose: duration || false }
+    { autoClose: duration || 2000 }
   )
 }
 

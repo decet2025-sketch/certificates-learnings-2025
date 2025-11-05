@@ -15,29 +15,8 @@ export const setGlobalLogout = (logoutFn: () => void) => {
   globalLogout = logoutFn;
 };
 
-// Toast configuration for different error types
-const ERROR_TOAST_CONFIG = {
-  error: {
-    autoClose: false as const, // Don't auto-close error toasts
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-  },
-  warning: {
-    autoClose: 8000,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-  },
-  info: {
-    autoClose: 5000,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-  },
-};
 
-// Enhanced error handler that shows toasts instead of breaking UI
+// Enhanced error handler that logs to console instead of showing toasts
 export const handleApiErrorWithToast = (
   error: unknown,
   context?: string
@@ -83,79 +62,24 @@ export const handleApiErrorWithToast = (
   // Get user-friendly message
   const userMessage = getUserFriendlyErrorMessage(apiError);
 
-  // Determine toast type based on error code
-  let toastType: 'error' | 'warning' = 'error';
-  let title = 'Error';
-
-  switch (apiError.code) {
-    case 'COURSE_EXISTS':
-    case 'ORGANIZATION_EXISTS':
-    case 'LEARNER_EXISTS':
-      toastType = 'warning';
-      title = 'Duplicate Entry';
-      break;
-    case 'VALIDATION_ERROR':
-      toastType = 'warning';
-      title = 'Validation Error';
-      break;
-    case 'AUTHENTICATION_ERROR':
-      toastType = 'error';
-      title = 'Session Expired';
-      // Automatically logout on authentication error
-      if (globalLogout) {
-        setTimeout(() => {
-          globalLogout?.();
-        }, 2000); // Give user time to see the message
-      }
-      break;
-    case 'AUTHORIZATION_ERROR':
-      toastType = 'error';
-      title = 'Access Denied';
-      break;
-    case 'NOT_FOUND_ERROR':
-      toastType = 'warning';
-      title = 'Not Found';
-      break;
-    case 'NETWORK_ERROR':
-    case 'TIMEOUT_ERROR':
-      toastType = 'error';
-      title = 'Connection Error';
-      break;
-    default:
-      if (apiError.statusCode === 401) {
-        toastType = 'error';
-        title = 'Session Expired';
-        // Automatically logout on 401 error
-        if (globalLogout) {
-          setTimeout(() => {
-            globalLogout?.();
-          }, 2000); // Give user time to see the message
-        }
-      } else if (apiError.statusCode >= 500) {
-        toastType = 'error';
-        title = 'Server Error';
-      } else if (apiError.statusCode >= 400) {
-        toastType = 'warning';
-        title = 'Request Error';
-      }
+  // Log to console with context if provided
+  if (context) {
+    console.error(`Error in ${context}: ${userMessage}`, apiError);
+  } else {
+    console.error(userMessage, apiError);
   }
 
-  // Show appropriate toast using simple string content
-  const toastMessage = context
-    ? `${userMessage}\n\nContext: ${context}`
-    : userMessage;
-
-  switch (toastType) {
-    case 'error':
-      toast.error(toastMessage, ERROR_TOAST_CONFIG.error);
-      break;
-    case 'warning':
-      toast.warning(toastMessage, ERROR_TOAST_CONFIG.warning);
-      break;
+  // Handle authentication errors that need logout
+  if (apiError.code === 'AUTHENTICATION_ERROR' || apiError.statusCode === 401) {
+    if (globalLogout) {
+      setTimeout(() => {
+        globalLogout?.();
+      }, 100); // Quick logout on auth error
+    }
   }
 };
 
-// Wrapper for API calls that handles errors with toasts
+// Wrapper for API calls that handles errors with console logging
 export const withErrorToast = async <T>(
   apiCall: () => Promise<T>,
   context?: string
@@ -168,7 +92,7 @@ export const withErrorToast = async <T>(
   }
 };
 
-// Enhanced API request wrapper that parses response body errors
+// Enhanced API request wrapper that parses response body errors and logs to console
 export const apiRequestWithToast = async <T>(
   endpoint: string,
   config: RequestInit = {},
@@ -213,11 +137,6 @@ export const apiRequestWithToast = async <T>(
   }
 };
 
-// Utility to clear all toasts
-export const clearAllErrorToasts = () => {
-  toast.dismiss();
-};
-
 // Utility to show success toast
 export const showSuccessToast = (
   message: string,
@@ -231,4 +150,9 @@ export const showSuccessToast = (
     pauseOnHover: true,
     draggable: true,
   });
+};
+
+// Utility to clear all toasts (for success/info toasts only)
+export const clearAllErrorToasts = () => {
+  toast.dismiss();
 };
