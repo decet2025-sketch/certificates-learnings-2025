@@ -47,6 +47,7 @@ export const useLearnersStore = create<LearnersStore>()(
         },
         searchTerm: '',
         selectedOrganization: 'All',
+        lastFetchParams: null,
 
         // Actions
         setLearners: (learners) => {
@@ -224,14 +225,26 @@ export const useLearnersStore = create<LearnersStore>()(
           const { pagination } = get();
           const limit = itemsPerPage || pagination.itemsPerPage;
 
+          const currentParams = {
+            page,
+            search,
+            organization,
+            limit,
+          };
+
           // Prevent multiple simultaneous calls
           if (currentState.isLoading) {
-            console.log('API call already in progress, skipping...', {
-              page,
-              search,
-              organization,
-              itemsPerPage: limit,
-            });
+            console.log('API call already in progress, skipping...', currentParams);
+            return;
+          }
+
+          // Prevent duplicate calls with same parameters
+          if (
+            currentState.lastFetchParams &&
+            JSON.stringify(currentState.lastFetchParams) ===
+              JSON.stringify(currentParams)
+          ) {
+            console.log('Duplicate API call prevented', currentParams);
             return;
           }
 
@@ -240,6 +253,7 @@ export const useLearnersStore = create<LearnersStore>()(
               isLoading: true,
               error: null,
               adminLearners: [],
+              lastFetchParams: currentParams,
             },
             false,
             'fetchAdminLearners/start'
@@ -443,7 +457,7 @@ export const useLearnersStore = create<LearnersStore>()(
           // Only persist user preferences, not API data or pagination
           searchTerm: state.searchTerm,
           selectedOrganization: state.selectedOrganization,
-          // Don't persist: learners, adminLearners, pagination, totalCount, selectedLearner
+          // Don't persist: learners, adminLearners, pagination, totalCount, selectedLearner, lastFetchParams
           // These should be fresh on each page load
         }),
       }

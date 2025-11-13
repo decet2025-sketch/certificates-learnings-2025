@@ -145,6 +145,12 @@ export interface LearnersState {
   };
   searchTerm: string;
   selectedOrganization: string;
+  lastFetchParams: {
+    page: number;
+    search: string;
+    organization: string;
+    limit: number;
+  } | null;
 }
 
 export interface OrganizationsState {

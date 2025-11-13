@@ -163,8 +163,7 @@ export default function LearnersPage() {
 
     const timeoutId = setTimeout(
       () => {
-        // Reset to page 1 when searching or clearing
-        setPagination({ currentPage: 1 });
+        fetchAdminLearners(1, searchTerm, selectedOrganization, pagination.itemsPerPage);
       },
       500 // Always use 500ms delay for search
     );
@@ -172,14 +171,16 @@ export default function LearnersPage() {
     return () => clearTimeout(timeoutId);
   }, [searchTerm]); // Only depend on searchTerm
 
-  // Handle pagination, search, and organization changes - single effect for all data fetching
+  // Handle pagination and organization changes - exclude search since it's handled by debouncing
   useEffect(() => {
     // Skip only on the very first mount to prevent double API calls
     if (isInitialMount) return;
 
     console.log(
       'Learners: Fetching learners for page:',
-      pagination.currentPage
+      pagination.currentPage,
+      'organization:',
+      selectedOrganization
     );
     fetchAdminLearners(
       pagination.currentPage,
@@ -191,9 +192,7 @@ export default function LearnersPage() {
     pagination.currentPage,
     selectedOrganization,
     pagination.itemsPerPage,
-    searchTerm,
-    hasSearched,
-  ]); // Include all dependencies
+  ]); // Exclude searchTerm to avoid conflicts with debouncing
 
   // Use adminLearners directly since all filtering is now handled by the API
   // Exclude deleted learners for optimistic UI updates
