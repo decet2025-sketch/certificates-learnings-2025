@@ -274,7 +274,7 @@ export function UploadLearnersModal({
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• File must be in CSV format (.csv)</li>
               <li>• Maximum file size: 5MB</li>
-              <li>• Required columns: name, email, organization</li>
+              <li>• Required columns: name, email, organization, password</li>
               <li>• First row should contain column headers</li>
               <li>• Use commas to separate values</li>
             </ul>

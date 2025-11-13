@@ -227,7 +227,7 @@ export default function CoursesPage() {
 
   const downloadSampleCSV = () => {
     // CSV content with headers from sample_learners.csv
-    const csvContent = 'name,email,organization_website\n';
+    const csvContent = 'name,email,organization_website,password\n';
 
     // Create blob and download
     const blob = new Blob([csvContent], {
