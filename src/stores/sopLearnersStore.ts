@@ -338,11 +338,10 @@ export const useSopLearnersStore = create<SopLearnersStore>()(
       {
         name: 'sop-learners-storage',
         partialize: (state) => ({
-          // Only persist user preferences, not API data
-          searchTerm: state.searchTerm,
-          pagination: {
-            itemsPerPage: state.pagination.itemsPerPage,
-          },
+          // Only persist essential user preferences, not API data or filters
+          // Don't persist: searchTerm (filter should reset on page refresh)
+          // Don't persist: pagination itemsPerPage (should reset to default)
+          // These should be fresh on each page load
         }),
       }
     ),

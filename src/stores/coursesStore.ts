@@ -339,8 +339,8 @@ export const useCoursesStore = create<CoursesStore>()(
       {
         name: 'courses-storage',
         partialize: (state) => ({
-          // Only persist user preferences, not API data or pagination
-          searchTerm: state.searchTerm,
+          // Only persist essential user preferences, not API data or filters
+          // Don't persist: searchTerm (filter should reset on page refresh)
           // Don't persist: courses, pagination, totalCount, selectedCourse
           // These should be fresh on each page load
         }),

@@ -454,9 +454,8 @@ export const useLearnersStore = create<LearnersStore>()(
       {
         name: 'learners-storage',
         partialize: (state) => ({
-          // Only persist user preferences, not API data or pagination
-          searchTerm: state.searchTerm,
-          selectedOrganization: state.selectedOrganization,
+          // Only persist essential user preferences, not API data or filters
+          // Don't persist: searchTerm, selectedOrganization (filters should reset on page refresh)
           // Don't persist: learners, adminLearners, pagination, totalCount, selectedLearner, lastFetchParams
           // These should be fresh on each page load
         }),
