@@ -23,7 +23,6 @@ import {
 import {
   Users,
   Search,
-  CheckCircle,
   CheckCircle2,
   Clock,
   MinusCircle,
@@ -31,12 +30,13 @@ import {
   Download,
   Eye,
   Building2,
-  Award,
   RefreshCw,
   AlertCircle,
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  // CheckCircle, // Commented out - statistics functionality disabled
+  // Award, // Commented out - statistics functionality disabled
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import LearnerDetailSideCurtain from '@/components/LearnerDetailSideCurtain';
@@ -49,14 +49,14 @@ export default function SopLearnersPage() {
   const {
     learners,
     isLoading,
-    isStatisticsLoading,
+    // isStatisticsLoading, // Commented out - statistics functionality disabled
     pagination,
     searchTerm,
-    summary,
+    // summary, // Commented out - statistics functionality disabled
     setSearchTerm,
     setPagination,
     fetchSopLearners,
-    fetchStatistics,
+    // fetchStatistics, // Commented out - statistics functionality disabled
     refreshLearners,
   } = useSopLearnersStore();
 
@@ -67,7 +67,7 @@ export default function SopLearnersPage() {
   useEffect(() => {
     if (user?.organizationWebsite) {
       // Fetch statistics and learners data separately
-      fetchStatistics(user.organizationWebsite);
+      // fetchStatistics(user.organizationWebsite); // Commented out - statistics functionality disabled
       fetchSopLearners(user.organizationWebsite, 1, searchTerm, 10);
     }
   }, [user?.organizationWebsite]);
@@ -233,16 +233,22 @@ export default function SopLearnersPage() {
   const handleRefresh = async () => {
     if (user?.organizationWebsite) {
       // Refresh both statistics and learners data
-      await fetchStatistics(user.organizationWebsite);
+      // await fetchStatistics(user.organizationWebsite); // Commented out - statistics functionality disabled
       await refreshLearners(user.organizationWebsite);
     }
   };
 
   // Use summary data from API
-  const totalLearners = summary?.total_learners || 0;
-  const activeLearners = summary?.active_learners || 0;
-  const totalEnrollments = summary?.total_enrollments || 0;
-  const averageCompletion = summary?.completion_rate || 0;
+  // const totalLearners = summary?.total_learners || 0;
+  // const activeLearners = summary?.active_learners || 0;
+  // const totalEnrollments = summary?.total_enrollments || 0;
+  // const averageCompletion = summary?.completion_rate || 0;
+
+  // Hard-coded values to prevent UI breaking - commented out since UI is disabled
+  // const totalLearners = 0;
+  // const activeLearners = 0;
+  // const totalEnrollments = 0;
+  // const averageCompletion = 0;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -284,8 +290,8 @@ export default function SopLearnersPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Summary Cards - Commented out - statistics functionality disabled */}
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -350,15 +356,15 @@ export default function SopLearnersPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Results Summary */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+      {/* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
         <div className="text-sm text-muted-foreground">
           {learners.length} learner
           {learners.length !== 1 ? 's' : ''} found
         </div>
-      </div>
+      </div> */}
 
       {/* Learners Content */}
       <Card>

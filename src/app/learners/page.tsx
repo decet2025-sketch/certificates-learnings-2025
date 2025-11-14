@@ -48,9 +48,9 @@ import {
 import { api } from '@/lib/api';
 import { AdminLearner, AdminLearnerListResponse } from '@/types/api';
 import { useLearnersStore } from '@/stores/learnersStore';
-import { adminApi } from '@/lib/api/admin-api';
+// import { adminApi } from '@/lib/api/admin-api'; // Commented out - statistics functionality disabled
 import { LoadingCard } from '@/components/ui/loading-spinner';
-import { handleApiErrorWithToast } from '@/lib/error-toast-handler';
+// import { handleApiErrorWithToast } from '@/lib/error-toast-handler'; // Commented out - statistics functionality disabled
 import {
   Dialog,
   DialogContent,
@@ -100,13 +100,13 @@ export default function LearnersPage() {
     deleteLearner,
   } = useLearnersStore();
 
-  const [summary, setSummary] = useState({
-    total_learners: 0,
-    active_learners: 0,
-    total_enrollments: 0,
-    completion_rate: 0,
-  });
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  // const [summary, setSummary] = useState({
+  //   total_learners: 0,
+  //   active_learners: 0,
+  //   total_enrollments: 0,
+  //   completion_rate: 0,
+  // });
+  // const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [selectedLearner, setSelectedLearner] = useState<any>(null);
   const [isSideCurtainOpen, setIsSideCurtainOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -118,34 +118,34 @@ export default function LearnersPage() {
   const [deletedLearnerIds, setDeletedLearnerIds] = useState<Set<string>>(new Set());
 
   // Fetch statistics
-  const fetchStatistics = async () => {
-    setIsLoadingStats(true);
-    try {
-      const stats = await adminApi.getLearnerStatistics();
-      setSummary(stats);
-    } catch (error) {
-      console.error('Failed to fetch learner statistics:', error);
-      handleApiErrorWithToast(
-        error,
-        'Failed to load learner statistics'
-      );
-      // Set default stats to prevent UI breaking
-      setSummary({
-        total_learners: 0,
-        active_learners: 0,
-        total_enrollments: 0,
-        completion_rate: 0,
-      });
-    } finally {
-      setIsLoadingStats(false);
-    }
-  };
+  // const fetchStatistics = async () => {
+  //   setIsLoadingStats(true);
+  //   try {
+  //     const stats = await adminApi.getLearnerStatistics();
+  //     setSummary(stats);
+  //   } catch (error) {
+  //     console.error('Failed to fetch learner statistics:', error);
+  //     handleApiErrorWithToast(
+  //       error,
+  //       'Failed to load learner statistics'
+  //     );
+  //     // Set default stats to prevent UI breaking
+  //     setSummary({
+  //       total_learners: 0,
+  //       active_learners: 0,
+  //       total_enrollments: 0,
+  //       completion_rate: 0,
+  //     });
+  //   } finally {
+  //     setIsLoadingStats(false);
+  //   }
+  // };
 
   // Initialize data on mount
   useEffect(() => {
     // Fetch fresh data on mount
     fetchAdminLearners(1, searchTerm, selectedOrganization, 10);
-    fetchStatistics();
+    // fetchStatistics(); // Commented out - statistics functionality disabled
     setIsInitialMount(false);
   }, []); // Only run on mount
 
@@ -389,10 +389,10 @@ export default function LearnersPage() {
   };
 
   // Use summary data from API
-  const totalLearners = summary?.total_learners || 0;
-  const activeLearners = summary?.active_learners || 0;
-  const totalEnrollments = summary?.total_enrollments || 0;
-  const averageCompletion = summary?.completion_rate || 0;
+  // const totalLearners = summary?.total_learners || 0;
+  // const activeLearners = summary?.active_learners || 0;
+  // const totalEnrollments = summary?.total_enrollments || 0;
+  // const averageCompletion = summary?.completion_rate || 0;
 
   return (
     <DashboardLayout requiredRole="admin">
@@ -503,12 +503,12 @@ export default function LearnersPage() {
         </div> */}
 
         {/* Results Summary */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+        {/* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
           <div className="text-sm text-muted-foreground">
             {filteredLearners.length} learner
             {filteredLearners.length !== 1 ? 's' : ''} found
           </div>
-        </div>
+        </div> */}
 
         {/* Learners Content */}
         <Card>
