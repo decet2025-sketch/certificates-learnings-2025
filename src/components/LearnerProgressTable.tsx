@@ -288,7 +288,7 @@ export function LearnerProgressTable({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search learners, courses..."
+              placeholder="Search learners..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 text-sm sm:text-base h-10 sm:h-11"

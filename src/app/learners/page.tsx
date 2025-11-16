@@ -33,6 +33,7 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Filter,
 } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import LearnerDetailSideCurtain from '@/components/LearnerDetailSideCurtain';
@@ -45,10 +46,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { api } from '@/lib/api';
 import { AdminLearner, AdminLearnerListResponse } from '@/types/api';
 import { useLearnersStore } from '@/stores/learnersStore';
-// import { adminApi } from '@/lib/api/admin-api'; // Commented out - statistics functionality disabled
+import { adminApi } from '@/lib/api/admin-api';
 import { LoadingCard } from '@/components/ui/loading-spinner';
 // import { handleApiErrorWithToast } from '@/lib/error-toast-handler'; // Commented out - statistics functionality disabled
 import {
@@ -92,8 +100,12 @@ export default function LearnersPage() {
     pagination,
     searchTerm,
     selectedOrganization,
+    enrollmentStatus,
+    organizationWebsite,
     setSearchTerm,
     setSelectedOrganization,
+    setEnrollmentStatus,
+    setOrganizationWebsite,
     setPagination,
     fetchAdminLearners,
     refreshLearners,
@@ -116,7 +128,9 @@ export default function LearnersPage() {
   const [deletingLearner, setDeletingLearner] = useState<AdminLearner | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletedLearnerIds, setDeletedLearnerIds] = useState<Set<string>>(new Set());
+  const [isDownloadingCSV, setIsDownloadingCSV] = useState(false);
 
+  
   // Fetch statistics
   // const fetchStatistics = async () => {
   //   setIsLoadingStats(true);
@@ -144,7 +158,7 @@ export default function LearnersPage() {
   // Initialize data on mount
   useEffect(() => {
     // Fetch fresh data on mount
-    fetchAdminLearners(1, searchTerm, selectedOrganization, 10);
+    fetchAdminLearners(1, searchTerm, selectedOrganization, 10, 'all', '');
     // fetchStatistics(); // Commented out - statistics functionality disabled
     setIsInitialMount(false);
   }, []); // Only run on mount
@@ -163,15 +177,30 @@ export default function LearnersPage() {
 
     const timeoutId = setTimeout(
       () => {
-        fetchAdminLearners(1, searchTerm, selectedOrganization, pagination.itemsPerPage);
+        fetchAdminLearners(1, searchTerm, selectedOrganization, pagination.itemsPerPage, enrollmentStatus, organizationWebsite);
       },
-      500 // Always use 500ms delay for search
+      1000 // Always use 1 second delay for search
     );
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm]); // Only depend on searchTerm
 
-  // Handle pagination and organization changes - exclude search since it's handled by debouncing
+  // Handle filter changes with debouncing
+  useEffect(() => {
+    // Skip on initial mount
+    if (isInitialMount) return;
+
+    const timeoutId = setTimeout(
+      () => {
+        fetchAdminLearners(1, searchTerm, selectedOrganization, pagination.itemsPerPage, enrollmentStatus, organizationWebsite);
+      },
+      1000 // Use 1 second delay for filters
+    );
+
+    return () => clearTimeout(timeoutId);
+  }, [enrollmentStatus, organizationWebsite]); // Only depend on filter values
+
+  // Handle pagination and organization changes - exclude search and filters since they're handled by debouncing
   useEffect(() => {
     // Skip only on the very first mount to prevent double API calls
     if (isInitialMount) return;
@@ -186,13 +215,15 @@ export default function LearnersPage() {
       pagination.currentPage,
       searchTerm,
       selectedOrganization,
-      pagination.itemsPerPage
+      pagination.itemsPerPage,
+      enrollmentStatus,
+      organizationWebsite
     );
   }, [
     pagination.currentPage,
     selectedOrganization,
     pagination.itemsPerPage,
-  ]); // Exclude searchTerm to avoid conflicts with debouncing
+  ]); // Exclude searchTerm and filters to avoid conflicts with debouncing
 
   // Use adminLearners directly since all filtering is now handled by the API
   // Exclude deleted learners for optimistic UI updates
@@ -388,6 +419,31 @@ export default function LearnersPage() {
     setDeletingLearner(null);
   };
 
+  const handleDownloadCSV = async () => {
+    setIsDownloadingCSV(true);
+    try {
+      const response = await adminApi.downloadLearnersCSV();
+
+      // Convert base64 data to CSV
+      const csv = atob(response.data_base64);
+      const blob = new Blob([csv], { type: response.mime });
+
+      // Create download link
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = response.filename;
+      link.click();
+
+      // Clean up
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Failed to download CSV:', error);
+      // You might want to show a toast error here
+    } finally {
+      setIsDownloadingCSV(false);
+    }
+  };
+
   // Use summary data from API
   // const totalLearners = summary?.total_learners || 0;
   // const activeLearners = summary?.active_learners || 0;
@@ -415,7 +471,7 @@ export default function LearnersPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search learners, courses, or organizations..."
+                placeholder="Search learners..."
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10"
@@ -430,6 +486,54 @@ export default function LearnersPage() {
               >
                 <span>Refresh</span>
               </Button>
+              <Button
+                variant="outline"
+                onClick={handleDownloadCSV}
+                className="flex items-center space-x-2"
+                disabled={isDownloadingCSV}
+              >
+                <Download className="h-4 w-4" />
+                <span>{isDownloadingCSV ? 'Downloading...' : 'Download CSV'}</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Additional Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Enrollment Status Filter */}
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Select
+                value={enrollmentStatus}
+                onValueChange={(value) => {
+                  setEnrollmentStatus(value);
+                  setPagination({ currentPage: 1 });
+                }}
+              >
+                <SelectTrigger className="pl-10 w-full sm:w-48">
+                  <SelectValue placeholder="Enrollment Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="enrolled">Enrolled</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Organization Website Filter */}
+            <div className="relative flex-1 sm:flex-initial">
+              <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Filter by organization website..."
+                value={organizationWebsite}
+                onChange={(e) => {
+                  setOrganizationWebsite(e.target.value);
+                  setPagination({ currentPage: 1 });
+                }}
+                className="pl-10 w-full sm:w-64"
+              />
             </div>
           </div>
         </div>

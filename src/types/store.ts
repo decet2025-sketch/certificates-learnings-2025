@@ -145,11 +145,15 @@ export interface LearnersState {
   };
   searchTerm: string;
   selectedOrganization: string;
+  enrollmentStatus: string;
+  organizationWebsite: string;
   lastFetchParams: {
     page: number;
     search: string;
     organization: string;
     limit: number;
+    enrollmentStatus?: string;
+    organizationWebsite?: string;
   } | null;
 }
 
@@ -234,12 +238,16 @@ export interface LearnersActions {
   ) => void;
   setSearchTerm: (searchTerm: string) => void;
   setSelectedOrganization: (organization: string) => void;
+  setEnrollmentStatus: (status: string) => void;
+  setOrganizationWebsite: (website: string) => void;
   fetchLearners: () => Promise<void>;
   fetchAdminLearners: (
     page?: number,
     search?: string,
     organization?: string,
-    itemsPerPage?: number
+    itemsPerPage?: number,
+    enrollmentStatus?: string,
+    organizationWebsite?: string
   ) => Promise<void>;
   refreshLearners: () => void;
   createLearner: (learnerData: Omit<Learner, 'id'>) => Promise<void>;

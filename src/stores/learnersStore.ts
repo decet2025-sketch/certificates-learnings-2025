@@ -47,6 +47,8 @@ export const useLearnersStore = create<LearnersStore>()(
         },
         searchTerm: '',
         selectedOrganization: 'All',
+        enrollmentStatus: 'all',
+        organizationWebsite: '',
         lastFetchParams: null,
 
         // Actions
@@ -86,7 +88,9 @@ export const useLearnersStore = create<LearnersStore>()(
               1,
               get().searchTerm,
               get().selectedOrganization,
-              pagination.itemsPerPage
+              pagination.itemsPerPage,
+              'all',
+              ''
             );
           }
         },
@@ -103,14 +107,32 @@ export const useLearnersStore = create<LearnersStore>()(
           );
         },
 
+        setEnrollmentStatus: (status) => {
+          set(
+            { enrollmentStatus: status },
+            false,
+            'setEnrollmentStatus'
+          );
+        },
+
+        setOrganizationWebsite: (website) => {
+          set(
+            { organizationWebsite: website },
+            false,
+            'setOrganizationWebsite'
+          );
+        },
+
         refreshLearners: () => {
-          const { pagination, searchTerm, selectedOrganization } =
+          const { pagination, searchTerm, selectedOrganization, enrollmentStatus, organizationWebsite } =
             get();
           get().fetchAdminLearners(
             pagination.currentPage,
             searchTerm,
             selectedOrganization,
-            pagination.itemsPerPage
+            pagination.itemsPerPage,
+            enrollmentStatus,
+            organizationWebsite
           );
         },
 
@@ -219,7 +241,9 @@ export const useLearnersStore = create<LearnersStore>()(
           page = 1,
           search = '',
           organization = 'All',
-          itemsPerPage?: number
+          itemsPerPage?: number,
+          enrollmentStatus?: string,
+          organizationWebsite?: string
         ) => {
           const currentState = get();
           const { pagination } = get();
@@ -230,6 +254,8 @@ export const useLearnersStore = create<LearnersStore>()(
             search,
             organization,
             limit,
+            enrollmentStatus,
+            organizationWebsite,
           };
 
           // Prevent multiple simultaneous calls
@@ -262,14 +288,16 @@ export const useLearnersStore = create<LearnersStore>()(
           try {
             const offset = (page - 1) * limit;
 
-            const organizationWebsite =
+            const organizationFilter =
               organization === 'All' ? undefined : organization;
 
             console.log('Fetching learners with:', {
               limit,
               offset,
               search: search || undefined,
-              organization: organizationWebsite,
+              organization: organizationFilter,
+              enrollment_status: enrollmentStatus,
+              organization_website: organizationWebsite,
               currentPagination: pagination,
               itemsPerPageParam: itemsPerPage,
               pageParam: page,
@@ -279,6 +307,8 @@ export const useLearnersStore = create<LearnersStore>()(
               limit,
               offset,
               search || undefined,
+              organizationFilter,
+              enrollmentStatus,
               organizationWebsite
             );
 
@@ -371,7 +401,9 @@ export const useLearnersStore = create<LearnersStore>()(
               pagination.currentPage,
               searchTerm,
               selectedOrganization,
-              pagination.itemsPerPage
+              pagination.itemsPerPage,
+              'all',
+              ''
             );
 
             set(
@@ -424,7 +456,9 @@ export const useLearnersStore = create<LearnersStore>()(
               pagination.currentPage,
               searchTerm,
               selectedOrganization,
-              pagination.itemsPerPage
+              pagination.itemsPerPage,
+              'all',
+              ''
             );
 
             set(

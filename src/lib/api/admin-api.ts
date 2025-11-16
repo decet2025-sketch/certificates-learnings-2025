@@ -360,6 +360,8 @@ export const adminApi = {
     limit: number = 10,
     offset: number = 0,
     search?: string,
+    organization?: string,
+    enrollment_status?: string,
     organization_website?: string
   ): Promise<AdminLearnerListResponse> => {
     const payload: Record<string, unknown> = {
@@ -369,6 +371,14 @@ export const adminApi = {
 
     if (search) {
       payload.search = search;
+    }
+
+    if (organization) {
+      payload.organization = organization;
+    }
+
+    if (enrollment_status && enrollment_status !== 'all') {
+      payload.enrollment_status = enrollment_status;
     }
 
     if (organization_website) {
@@ -592,6 +602,26 @@ export const adminApi = {
       };
     }>('VALIDATE_CSV_ORGANIZATION_CONFLICTS', { course_id, csv_data });
     return result.data;
+  },
+
+  // Download Learners CSV
+  downloadLearnersCSV: async (): Promise<{
+    data_base64: string;
+    filename: string;
+    mime: string;
+  }> => {
+    const result = await executeAdminRouter<{
+      ok: boolean;
+      status: number;
+      filename: string;
+      mime: string;
+      data_base64: string;
+    }>('DOWNLOAD_LEARNERS_CSV', {});
+    return {
+      data_base64: result.data_base64,
+      filename: result.filename,
+      mime: result.mime,
+    };
   },
 };
 
