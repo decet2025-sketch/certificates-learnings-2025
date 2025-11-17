@@ -147,6 +147,8 @@ export interface LearnersState {
   selectedOrganization: string;
   enrollmentStatus: string;
   organizationWebsite: string;
+  organizations: Array<{ id: string; name: string; website: string }>;
+  isOrganizationsLoading: boolean;
   lastFetchParams: {
     page: number;
     search: string;
@@ -240,6 +242,9 @@ export interface LearnersActions {
   setSelectedOrganization: (organization: string) => void;
   setEnrollmentStatus: (status: string) => void;
   setOrganizationWebsite: (website: string) => void;
+  setOrganizations: (organizations: Array<{ id: string; name: string; website: string }>) => void;
+  setOrganizationsLoading: (loading: boolean) => void;
+  fetchOrganizationsForDropdown: () => Promise<void>;
   fetchLearners: () => Promise<void>;
   fetchAdminLearners: (
     page?: number,

@@ -865,6 +865,16 @@ export const learnerApi = {
   },
 };
 
+// Function to fetch all organizations for dropdown
+export const getOrganizationsForDropdown = async (): Promise<{ id: string; name: string; website: string }[]> => {
+  const result = await adminApi.listOrganizations(3000, 0); // Get all organizations with hardcoded limit
+  return result.organizations.map(org => ({
+    id: org.id,
+    name: org.name,
+    website: org.website
+  }));
+};
+
 export const handleApiError = (error: unknown): string => {
   // Show toast for the error
   handleApiErrorWithToast(error, 'API Error');

@@ -5,6 +5,7 @@ import {
   learnerApi,
   handleApiError,
   adminApi,
+  getOrganizationsForDropdown,
 } from '@/lib/api/admin-api';
 import {
   LearnerApi,
@@ -49,6 +50,8 @@ export const useLearnersStore = create<LearnersStore>()(
         selectedOrganization: 'All',
         enrollmentStatus: 'all',
         organizationWebsite: '',
+        organizations: [],
+        isOrganizationsLoading: false,
         lastFetchParams: null,
 
         // Actions
@@ -121,6 +124,31 @@ export const useLearnersStore = create<LearnersStore>()(
             false,
             'setOrganizationWebsite'
           );
+        },
+
+        setOrganizations: (organizations) => {
+          set({ organizations }, false, 'setOrganizations');
+        },
+
+        setOrganizationsLoading: (loading) => {
+          set({ isOrganizationsLoading: loading }, false, 'setOrganizationsLoading');
+        },
+
+        fetchOrganizationsForDropdown: async () => {
+          set({ isOrganizationsLoading: true }, false, 'fetchOrganizationsForDropdown');
+          try {
+            const result = await getOrganizationsForDropdown();
+            set({
+              organizations: result,
+              isOrganizationsLoading: false
+            }, false, 'fetchOrganizationsForDropdown');
+          } catch (error) {
+            const errorMessage = handleApiError(error);
+            set({
+              error: errorMessage,
+              isOrganizationsLoading: false
+            }, false, 'fetchOrganizationsForDropdown');
+          }
         },
 
         refreshLearners: () => {

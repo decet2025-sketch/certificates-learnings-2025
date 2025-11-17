@@ -102,6 +102,8 @@ export default function LearnersPage() {
     selectedOrganization,
     enrollmentStatus,
     organizationWebsite,
+    organizations,
+    isOrganizationsLoading,
     setSearchTerm,
     setSelectedOrganization,
     setEnrollmentStatus,
@@ -110,6 +112,7 @@ export default function LearnersPage() {
     fetchAdminLearners,
     refreshLearners,
     deleteLearner,
+    fetchOrganizationsForDropdown,
   } = useLearnersStore();
 
   // const [summary, setSummary] = useState({
@@ -157,6 +160,8 @@ export default function LearnersPage() {
 
   // Initialize data on mount
   useEffect(() => {
+    // Fetch organizations for dropdown
+    fetchOrganizationsForDropdown();
     // Fetch fresh data on mount
     fetchAdminLearners(1, searchTerm, selectedOrganization, 10, 'all', '');
     // fetchStatistics(); // Commented out - statistics functionality disabled
@@ -525,15 +530,26 @@ export default function LearnersPage() {
             {/* Organization Website Filter */}
             <div className="relative flex-1 sm:flex-initial">
               <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Filter by organization website..."
-                value={organizationWebsite}
-                onChange={(e) => {
-                  setOrganizationWebsite(e.target.value);
+              <Select
+                value={organizationWebsite || "all"}
+                onValueChange={(value) => {
+                  setOrganizationWebsite(value === "all" ? "" : value);
                   setPagination({ currentPage: 1 });
                 }}
-                className="pl-10 w-full sm:w-64"
-              />
+                disabled={isOrganizationsLoading}
+              >
+                <SelectTrigger className="pl-10 w-full sm:w-64">
+                  <SelectValue placeholder={isOrganizationsLoading ? "Loading organizations..." : "Organization Website"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Organizations</SelectItem>
+                  {organizations.map((org) => (
+                    <SelectItem key={org.id} value={org.website}>
+                      {org.name} ({org.website})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
