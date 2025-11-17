@@ -74,10 +74,8 @@ export function SearchableOrganizationDropdown({
   const handleInputFocus = () => {
     if (!disabled && !isLoading) {
       setIsOpen(true);
-      // Set search query to current selected org name when opening
-      if (selectedOrg && !searchQuery) {
-        setSearchQuery(`${selectedOrg.name} ${selectedOrg.website}`);
-      }
+      // Keep search empty when opening dropdown for clean filtering experience
+      setSearchQuery('');
     }
   };
 
@@ -85,7 +83,7 @@ export function SearchableOrganizationDropdown({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setIsOpen(false);
-      setSearchQuery('');
+      setSearchQuery(''); // Keep search empty when closing
     }
   };
 
