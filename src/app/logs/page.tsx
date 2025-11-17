@@ -30,8 +30,6 @@ import {
 import {
   Filter,
   X,
-  Award,
-  UserPlus,
   Building2,
   Edit,
   BookOpen,
@@ -118,18 +116,9 @@ export default function AdminLogsPage() {
 
   const getActivityIcon = (activityType: string) => {
     switch (activityType.toLowerCase()) {
-      case 'certificate generated':
-      case 'certificate_generated':
-        return <Award className="h-4 w-4 text-green-600" />;
       case 'certificate sent':
       case 'certificate_sent':
         return <Download className="h-4 w-4 text-blue-600" />;
-      case 'certificate resent':
-      case 'certificate_resent':
-        return <Download className="h-4 w-4 text-indigo-600" />;
-      case 'learner enrolled':
-      case 'learner_enrolled':
-        return <UserPlus className="h-4 w-4 text-blue-600" />;
       case 'learner deleted':
       case 'learner_deleted':
         return <XCircle className="h-4 w-4 text-red-600" />;
@@ -154,39 +143,18 @@ export default function AdminLogsPage() {
       case 'bulk upload':
       case 'bulk_upload':
         return <Upload className="h-4 w-4 text-cyan-600" />;
-      case 'webhook received':
-      case 'webhook_received':
-        return <Download className="h-4 w-4 text-gray-600" />;
-      case 'webhook processed':
-      case 'webhook_processed':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'completion checked':
+            case 'completion checked':
       case 'completion_checked':
         return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'user created':
-      case 'user_created':
-        return <UserPlus className="h-4 w-4 text-purple-600" />;
-      case 'user login':
-      case 'user_login':
-        return <UserPlus className="h-4 w-4 text-blue-600" />;
-      default:
+          default:
         return <Clock className="h-4 w-4 text-gray-600" />;
     }
   };
 
   const getActivityTypeColor = (activityType: string) => {
     switch (activityType.toLowerCase()) {
-      case 'certificate generated':
-      case 'certificate_generated':
-        return 'bg-green-100 text-green-800';
       case 'certificate sent':
       case 'certificate_sent':
-        return 'bg-blue-100 text-blue-800';
-      case 'certificate resent':
-      case 'certificate_resent':
-        return 'bg-indigo-100 text-indigo-800';
-      case 'learner enrolled':
-      case 'learner_enrolled':
         return 'bg-blue-100 text-blue-800';
       case 'learner deleted':
       case 'learner_deleted':
@@ -212,22 +180,10 @@ export default function AdminLogsPage() {
       case 'bulk upload':
       case 'bulk_upload':
         return 'bg-cyan-100 text-cyan-800';
-      case 'webhook received':
-      case 'webhook_received':
-        return 'bg-gray-100 text-gray-800';
-      case 'webhook processed':
-      case 'webhook_processed':
-        return 'bg-green-100 text-green-800';
-      case 'completion checked':
+            case 'completion checked':
       case 'completion_checked':
         return 'bg-green-100 text-green-800';
-      case 'user created':
-      case 'user_created':
-        return 'bg-purple-100 text-purple-800';
-      case 'user login':
-      case 'user_login':
-        return 'bg-blue-100 text-blue-800';
-      default:
+            default:
         return 'bg-gray-100 text-gray-800';
     }
   };
@@ -358,37 +314,16 @@ export default function AdminLogsPage() {
                   <SelectItem value="Organization Deleted">
                     Organization Deleted
                   </SelectItem>
-                  <SelectItem value="Learner Enrolled">
-                    Learner Enrolled
-                  </SelectItem>
-                  <SelectItem value="Bulk Upload">
+                    <SelectItem value="Bulk Upload">
                     Bulk Upload
                   </SelectItem>
-                  <SelectItem value="Certificate Generated">
-                    Certificate Generated
-                  </SelectItem>
-                  <SelectItem value="Certificate Sent">
+                    <SelectItem value="Certificate Sent">
                     Certificate Sent
                   </SelectItem>
-                  <SelectItem value="Certificate Resent">
-                    Certificate Resent
-                  </SelectItem>
-                  <SelectItem value="Webhook Received">
-                    Webhook Received
-                  </SelectItem>
-                  <SelectItem value="Webhook Processed">
-                    Webhook Processed
-                  </SelectItem>
-                  <SelectItem value="Completion Checked">
+                          <SelectItem value="Completion Checked">
                     Completion Checked
                   </SelectItem>
-                  <SelectItem value="User Created">
-                    User Created
-                  </SelectItem>
-                  <SelectItem value="User Login">
-                    User Login
-                  </SelectItem>
-                  <SelectItem value="Learner Deleted">
+                        <SelectItem value="Learner Deleted">
                     Learner Deleted
                   </SelectItem>
                 </SelectContent>
