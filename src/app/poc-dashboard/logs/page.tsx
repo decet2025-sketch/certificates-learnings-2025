@@ -9,15 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -27,10 +19,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  Search,
-  X,
-  Award,
-  UserPlus,
   Building2,
   Edit,
   BookOpen,
@@ -51,17 +39,13 @@ import { handleApiErrorWithToast } from '@/lib/error-toast-handler';
 export default function PocLogsPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedActivityType, setSelectedActivityType] =
-    useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalLogs, setTotalLogs] = useState(0);
 
   useEffect(() => {
     fetchLogs();
-  }, [currentPage, selectedActivityType, selectedStatus]);
+  }, [currentPage]);
 
   const fetchLogs = async () => {
     setIsLoading(true);
@@ -85,26 +69,8 @@ export default function PocLogsPage() {
     }
   };
 
-  // Filter logs (client-side filtering for search only, as API handles other filters)
-  const filteredLogs = logs.filter((log) => {
-    const matchesSearch =
-      searchTerm === '' ||
-      log.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.actor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.target.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesActivityType =
-      selectedActivityType === 'all' ||
-      log.activity_type
-        .toLowerCase()
-        .includes(selectedActivityType.toLowerCase());
-
-    const matchesStatus =
-      selectedStatus === 'all' ||
-      log.status.toLowerCase() === selectedStatus.toLowerCase();
-
-    return matchesSearch && matchesActivityType && matchesStatus;
-  });
+  // No filtering - just return all logs
+  const filteredLogs = logs;
 
   // Pagination
   const totalPages = Math.ceil(totalLogs / itemsPerPage);
@@ -114,7 +80,7 @@ export default function PocLogsPage() {
     switch (activityType.toLowerCase()) {
       case 'certificate generated':
       case 'certificate_generated':
-        return <Award className="h-4 w-4 text-green-600" />;
+        return <Download className="h-4 w-4 text-green-600" />;
       case 'certificate sent':
       case 'certificate_sent':
         return <Download className="h-4 w-4 text-blue-600" />;
@@ -123,7 +89,7 @@ export default function PocLogsPage() {
         return <Download className="h-4 w-4 text-indigo-600" />;
       case 'learner enrolled':
       case 'learner_enrolled':
-        return <UserPlus className="h-4 w-4 text-blue-600" />;
+        return <Calendar className="h-4 w-4 text-blue-600" />;
       case 'learner deleted':
       case 'learner_deleted':
         return <XCircle className="h-4 w-4 text-red-600" />;
@@ -159,11 +125,11 @@ export default function PocLogsPage() {
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'user created':
       case 'user_created':
-        return <UserPlus className="h-4 w-4 text-purple-600" />;
+        return <Calendar className="h-4 w-4 text-purple-600" />;
       case 'user login':
       case 'user_login':
-        return <UserPlus className="h-4 w-4 text-blue-600" />;
-      default:
+        return <Calendar className="h-4 w-4 text-blue-600" />;
+            default:
         return <Clock className="h-4 w-4 text-gray-600" />;
     }
   };
@@ -221,7 +187,7 @@ export default function PocLogsPage() {
       case 'user login':
       case 'user_login':
         return 'bg-blue-100 text-blue-800';
-      default:
+            default:
         return 'bg-gray-100 text-gray-800';
     }
   };
@@ -250,18 +216,7 @@ export default function PocLogsPage() {
     });
   };
 
-  const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedActivityType('all');
-    setSelectedStatus('all');
-    setCurrentPage(1);
-  };
-
-  const hasActiveFilters =
-    searchTerm ||
-    selectedActivityType !== 'all' ||
-    selectedStatus !== 'all';
-
+  
   const exportLogs = () => {
     // In real implementation, this would generate and download a CSV file
     console.log('Exporting logs to CSV...');
@@ -323,108 +278,6 @@ export default function PocLogsPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search logs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            <Select
-              value={selectedActivityType}
-              onValueChange={setSelectedActivityType}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Activity Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Activities</SelectItem>
-                <SelectItem value="Course Created">
-                  Course Created
-                </SelectItem>
-                <SelectItem value="Course Updated">
-                  Course Updated
-                </SelectItem>
-                <SelectItem value="Course Deleted">
-                  Course Deleted
-                </SelectItem>
-                <SelectItem value="Organization Added">
-                  Organization Added
-                </SelectItem>
-                <SelectItem value="Organization Updated">
-                  Organization Updated
-                </SelectItem>
-                <SelectItem value="Organization Deleted">
-                  Organization Deleted
-                </SelectItem>
-                <SelectItem value="Learner Enrolled">
-                  Learner Enrolled
-                </SelectItem>
-                <SelectItem value="Bulk Upload">
-                  Bulk Upload
-                </SelectItem>
-                <SelectItem value="Certificate Generated">
-                  Certificate Generated
-                </SelectItem>
-                <SelectItem value="Certificate Sent">
-                  Certificate Sent
-                </SelectItem>
-                <SelectItem value="Certificate Resent">
-                  Certificate Resent
-                </SelectItem>
-                <SelectItem value="Webhook Received">
-                  Webhook Received
-                </SelectItem>
-                <SelectItem value="Webhook Processed">
-                  Webhook Processed
-                </SelectItem>
-                <SelectItem value="Completion Checked">
-                  Completion Checked
-                </SelectItem>
-                <SelectItem value="User Created">
-                  User Created
-                </SelectItem>
-                <SelectItem value="User Login">
-                  User Login
-                </SelectItem>
-                <SelectItem value="Learner Deleted">
-                  Learner Deleted
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={selectedStatus}
-              onValueChange={setSelectedStatus}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="success">Success</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {hasActiveFilters && (
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                onClick={clearFilters}
-                size="sm"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Clear Filters
-              </Button>
-            </div>
-          )}
 
           {/* Table */}
           <LoadingCard
