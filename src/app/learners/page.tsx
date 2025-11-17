@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { SearchableOrganizationDropdown } from '@/components/ui/searchable-organization-dropdown';
 import {
   Users,
   Search,
@@ -161,7 +162,7 @@ export default function LearnersPage() {
   // Initialize data on mount
   useEffect(() => {
     // Fetch fresh data on mount - LIST_ALL_LEARNERS API called first
-    fetchAdminLearners(1, searchTerm, selectedOrganization, 10, 'all', '');
+    fetchAdminLearners(1, searchTerm, selectedOrganization, 5, 'all', '');
     // Fetch organizations for dropdown
     fetchOrganizationsForDropdown();
     // fetchStatistics(); // Commented out - statistics functionality disabled
@@ -528,28 +529,19 @@ export default function LearnersPage() {
             </div>
 
             {/* Organization Website Filter */}
-            <div className="relative flex-1 sm:flex-initial">
-              <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Select
-                value={organizationWebsite || "all"}
-                onValueChange={(value) => {
-                  setOrganizationWebsite(value === "all" ? "" : value);
+            <div className="flex-1 sm:flex-initial">
+              <SearchableOrganizationDropdown
+                organizations={organizations}
+                value={organizationWebsite}
+                onChange={(value) => {
+                  setOrganizationWebsite(value);
                   setPagination({ currentPage: 1 });
                 }}
                 disabled={isOrganizationsLoading}
-              >
-                <SelectTrigger className="pl-10 w-full sm:w-64">
-                  <SelectValue placeholder={isOrganizationsLoading ? "Loading organizations..." : "Organization Website"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Organizations</SelectItem>
-                  {organizations.map((org) => (
-                    <SelectItem key={org.id} value={org.website}>
-                      {org.name} ({org.website})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                isLoading={isOrganizationsLoading}
+                placeholder="Organization Website"
+                className="w-full sm:w-[420px]"
+              />
             </div>
           </div>
         </div>
