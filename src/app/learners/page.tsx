@@ -160,10 +160,10 @@ export default function LearnersPage() {
 
   // Initialize data on mount
   useEffect(() => {
+    // Fetch fresh data on mount - LIST_ALL_LEARNERS API called first
+    fetchAdminLearners(1, searchTerm, selectedOrganization, 10, 'all', '');
     // Fetch organizations for dropdown
     fetchOrganizationsForDropdown();
-    // Fetch fresh data on mount
-    fetchAdminLearners(1, searchTerm, selectedOrganization, 10, 'all', '');
     // fetchStatistics(); // Commented out - statistics functionality disabled
     setIsInitialMount(false);
   }, []); // Only run on mount
