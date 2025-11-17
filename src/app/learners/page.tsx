@@ -520,7 +520,7 @@ export default function LearnersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  {/* <SelectItem value="pending">Pending</SelectItem> */}
                   <SelectItem value="enrolled">Enrolled</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                 </SelectContent>
@@ -698,14 +698,16 @@ export default function LearnersPage() {
                                     </div>
                                   </TableCell>
                                   <TableCell>
-                                    <div className="flex items-center space-x-2">
-                                      <Building2 className="h-4 w-4 text-muted-foreground" />
-                                      <span className="text-sm">
-                                        {
-                                          learner.organization_info
-                                            .name
-                                        }
-                                      </span>
+                                    <div className="flex items-start space-x-2">
+                                      <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                      <div>
+                                        <div className="text-sm">
+                                          {learner.organization_info.website}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {learner.organization_info.name}
+                                        </div>
+                                      </div>
                                     </div>
                                   </TableCell>
                                   <TableCell>
@@ -926,11 +928,16 @@ export default function LearnersPage() {
 
                             {/* Organization and Courses */}
                             <div className="space-y-2">
-                              <div className="flex items-center space-x-2">
-                                <Building2 className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-xs sm:text-sm text-muted-foreground">
-                                  {learner.organization_info.name}
-                                </span>
+                              <div className="flex items-start space-x-2">
+                                <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                  <div className="text-xs sm:text-sm">
+                                    {learner.organization_info.website}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {learner.organization_info.name}
+                                  </div>
+                                </div>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <BookOpen className="h-4 w-4 text-muted-foreground" />
