@@ -108,7 +108,6 @@ export function EditOrganizationModal({
               }
               placeholder="Enter POC email address"
               required
-              disabled
             />
             <p className="text-xs text-muted-foreground">
               This email will be used for POC communications
