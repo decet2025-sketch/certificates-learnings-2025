@@ -208,7 +208,7 @@ export const useCoursesStore = create<CoursesStore>()(
         ) => {
           const currentState = get();
           const { pagination } = get();
-          const limit = itemsPerPage || pagination.itemsPerPage;
+          const limit = 100;
 
           // Prevent multiple simultaneous calls
           if (currentState.isLoading) {
