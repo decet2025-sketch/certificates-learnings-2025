@@ -48,7 +48,7 @@ export const useCoursesStore = create<CoursesStore>()(
         totalCount: 0,
         pagination: {
           currentPage: 1,
-          itemsPerPage: 10,
+          itemsPerPage: 100,
           totalItems: 0,
           hasMore: false,
         },
