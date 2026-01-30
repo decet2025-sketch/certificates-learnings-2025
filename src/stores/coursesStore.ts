@@ -231,33 +231,33 @@ export const useCoursesStore = create<CoursesStore>()(
           );
 
           try {
-            const offset = (page - 1) * limit;
+            // Fetch a large number of courses to perform client-side sorting/pinning
+            // This ensures pinned courses are always at the top regardless of their creation date
+            // or default database sort order.
+            const FETCH_LIMIT = 1000;
 
-            console.log('Fetching courses with:', {
-              limit,
-              offset,
+            console.log('Fetching courses with client-side sort:', {
               search: search || undefined,
-              currentPagination: pagination,
-              itemsPerPageParam: itemsPerPage,
-              pageParam: page,
+              page,
+              limit
             });
 
             const response = await adminApi.listCourses(
-              limit,
-              offset,
+              FETCH_LIMIT,
+              0, // Always start from 0 to get the full list for sorting
               search || undefined
             );
 
-            const courses = response.courses.map(
+            let allProcessedCourses = response.courses.map(
               transformApiCourseToStore
             );
-            
+
             // Pin courses containing specific keywords to the top
-            const pinnedKeywords = ['201', '202', '203', '204'];
-            courses.sort((a, b) => {
+            const pinnedKeywords = ['201', '203', '204'];
+            allProcessedCourses.sort((a, b) => {
               const aName = (a.name || '').toLowerCase();
               const bName = (b.name || '').toLowerCase();
-              
+
               const isAPinned = pinnedKeywords.some(keyword => aName.includes(keyword));
               const isBPinned = pinnedKeywords.some(keyword => bName.includes(keyword));
 
@@ -266,13 +266,21 @@ export const useCoursesStore = create<CoursesStore>()(
               return 0;
             });
 
-            // Use pagination object directly like learners store
-            const totalItems = response.pagination?.total || 0;
-            const hasMore = response.pagination?.has_more || false;
+            // Client-side pagination
+            // Calculate start and end index for the requested page
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + limit;
+
+            // Slice the sorted array to get the current page's courses
+            const paginatedCourses = allProcessedCourses.slice(startIndex, endIndex);
+
+            // Update pagination state based on the full fetched list
+            const totalItems = allProcessedCourses.length;
+            const hasMore = endIndex < totalItems;
 
             set(
               {
-                courses,
+                courses: paginatedCourses,
                 pagination: {
                   ...pagination,
                   currentPage: page,
